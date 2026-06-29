@@ -46,11 +46,7 @@ def score_job(job: dict, profile: dict, client: anthropic.Anthropic) -> dict:
     )
 
     try:
-        _client = anthropic.Anthropic(
-            api_key=os.getenv("ANTHROPIC_API_KEY"),
-            base_url=os.getenv("ANTHROPIC_BASE_URL") or None,
-        )
-        response = _client.messages.create(
+        response = client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=512,
             messages=[{"role": "user", "content": prompt}],
