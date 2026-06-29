@@ -46,6 +46,10 @@ streamlit run app.py
 
 Opens at http://localhost:8501
 
+### Install as a desktop app (PWA)
+
+Once running, open http://localhost:8501 in Chrome or Edge and click the **install icon** (⊕) in the address bar → **Install Job Hunter**. It opens in its own window without a browser bar, just like a native app.
+
 ---
 
 ## Usage

@@ -35,6 +35,17 @@ def save_env_key(key: str, value: str):
 
 
 st.set_page_config(page_title="Job Hunter", page_icon="🎯", layout="wide")
+
+st.markdown("""
+<link rel="manifest" href="/app/static/manifest.json">
+<meta name="theme-color" content="#ff4b4b">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/app/static/sw.js');
+  }
+</script>
+""", unsafe_allow_html=True)
+
 st.title("🎯 Job Hunter")
 st.caption("Upload your LinkedIn profile, find roles most likely to get you an interview.")
 
