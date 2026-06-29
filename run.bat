@@ -12,6 +12,6 @@ if not exist "%APP_FILE%" (
 )
 
 start "" "msedge" --app="http://localhost:8501" --new-window
-python -m streamlit run "%APP_FILE%"
+python -m streamlit run "%APP_FILE%" --server.headless true
 
 endlocal
