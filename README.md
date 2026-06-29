@@ -29,19 +29,16 @@ Built in a few evenings using AI-assisted development.
 git clone https://github.com/Briancoughlin/job-hunter.git
 cd job-hunter
 pip install -r requirements.txt
+pip install python-jobspy --no-deps
 ```
+
+> **Note:** `python-jobspy` declares a dependency on an older numpy that doesn't have prebuilt wheels for Python 3.12+. Installing it with `--no-deps` skips that constraint — it works fine with numpy 2.x at runtime.
 
 ### Configure
 
 ```bash
 cp .env.example .env
 # Edit .env and add your ANTHROPIC_API_KEY
-```
-
-### Install dependencies
-
-```bash
-pip install -r requirements.txt
 ```
 
 ### Run
