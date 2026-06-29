@@ -1,0 +1,7 @@
+anthropic>=0.40.0
+streamlit>=1.40.0
+python-jobspy>=1.1.80
+pdfplumber>=0.11.0
+pandas>=2.0.0
+python-dotenv>=1.0.0
+numpy>=2.0.0
