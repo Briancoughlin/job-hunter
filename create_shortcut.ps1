@@ -25,7 +25,9 @@ if (-not (Test-Path $IcoFile)) {
 
 $Shell           = New-Object -ComObject WScript.Shell
 $Shortcut        = $Shell.CreateShortcut($LnkFile)
-$Shortcut.TargetPath       = $BatFile
+# Target cmd.exe (not the .bat directly) so Windows 11 allows pinning to taskbar
+$Shortcut.TargetPath       = "$env:SystemRoot\System32\cmd.exe"
+$Shortcut.Arguments        = "/c `"$BatFile`""
 $Shortcut.WorkingDirectory = $AppDir
 $Shortcut.Description      = 'Job Hunter - AI-powered job search assistant'
 $Shortcut.IconLocation     = "$IcoFile,0"
