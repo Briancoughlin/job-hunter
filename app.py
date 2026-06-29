@@ -215,7 +215,18 @@ if st.session_state.profile:
                 st.session_state.results = results
                 progress_bar.empty()
                 status_text.empty()
-                st.success(f"Done! Scored {len(results)} roles.")
+
+                # Surface scoring errors if everything came back 0
+                all_zero = all(r.get("overall_score", 0) == 0 for r in results)
+                if all_zero and results:
+                    first_gaps = results[0].get("gaps", [])
+                    error_msg = next((g for g in first_gaps if "Scoring error" in g), None)
+                    if error_msg:
+                        st.error(f"Scoring failed for all roles — {error_msg}")
+                    else:
+                        st.warning("All roles scored 0. Check your API key and Base URL in the sidebar.")
+                else:
+                    st.success(f"Done! Scored {len(results)} roles.")
                 st.rerun()
 else:
     st.info("Upload your LinkedIn PDF above to get started.")
