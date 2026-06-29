@@ -248,7 +248,7 @@ if st.session_state.results:
         ["All matches", "Recommended", "Saved", "Applied"]
     )
 
-    def render_job_card(job, idx):
+    def render_job_card(job, idx, tab):
         score = job.get("overall_score", 0)
         prob = job.get("interview_probability", "unknown")
         recommended = job.get("recommended", False)
@@ -263,6 +263,7 @@ if st.session_state.results:
         job_id = job.get("job_url", str(idx))
         is_saved = job_id in st.session_state.saved
         is_applied = job_id in st.session_state.applied
+        key_prefix = f"{tab}_{idx}_{job_id}"
 
         with st.container(border=True):
             col1, col2, col3 = st.columns([3, 1, 1])
@@ -284,13 +285,13 @@ if st.session_state.results:
                 if recommended:
                     st.success("✓ Recommended")
             with col3:
-                if st.button("💾 Save" if not is_saved else "✓ Saved", key=f"save_{idx}_{job_id}"):
+                if st.button("💾 Save" if not is_saved else "✓ Saved", key=f"save_{key_prefix}"):
                     if is_saved:
                         st.session_state.saved.discard(job_id)
                     else:
                         st.session_state.saved.add(job_id)
                     st.rerun()
-                if st.button("✅ Mark applied" if not is_applied else "Applied", key=f"apply_{idx}_{job_id}"):
+                if st.button("✅ Mark applied" if not is_applied else "Applied", key=f"apply_{key_prefix}"):
                     if is_applied:
                         st.session_state.applied.discard(job_id)
                     else:
@@ -314,31 +315,34 @@ if st.session_state.results:
                 st.write("**Summary:**")
                 st.write(job.get("fit_summary", ""))
 
-    def render_list(jobs_list, empty_msg="No roles here yet."):
+    def render_list(jobs_list, tab, empty_msg="No roles here yet."):
         if not jobs_list:
             st.info(empty_msg)
             return
         for idx, job in enumerate(jobs_list):
-            render_job_card(job, idx)
+            render_job_card(job, idx, tab)
 
     with tab_all:
-        render_list(filtered, "No roles above your minimum score threshold.")
+        render_list(filtered, "all", "No roles above your minimum score threshold.")
 
     with tab_recommended:
         render_list(
             [r for r in filtered if r.get("recommended")],
+            "recommended",
             "No recommended roles above your score threshold.",
         )
 
     with tab_saved:
         render_list(
             [r for r in results if r.get("job_url", "") in st.session_state.saved],
+            "saved",
             "You haven't saved any roles yet.",
         )
 
     with tab_applied:
         render_list(
             [r for r in results if r.get("job_url", "") in st.session_state.applied],
+            "applied",
             "No applications tracked yet.",
         )
 
