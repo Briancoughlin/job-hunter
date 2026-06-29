@@ -9,6 +9,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $AppDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
+$VbsFile = Join-Path $AppDir 'run.vbs'
 $BatFile = Join-Path $AppDir 'run.bat'
 $IcoFile = Join-Path $AppDir 'static\icon.ico'
 $LnkFile = Join-Path $AppDir 'Job Hunter.lnk'
@@ -17,21 +18,24 @@ if (-not (Test-Path $BatFile)) {
     Write-Error "run.bat not found in $AppDir — are you running this from the repo root?"
     exit 1
 }
-
+if (-not (Test-Path $VbsFile)) {
+    Write-Error "run.vbs not found in $AppDir — are you running this from the repo root?"
+    exit 1
+}
 if (-not (Test-Path $IcoFile)) {
     Write-Warning "Icon not found at $IcoFile — run 'python create_icons.py' first, then re-run this script."
     exit 1
 }
 
-$Shell           = New-Object -ComObject WScript.Shell
-$Shortcut        = $Shell.CreateShortcut($LnkFile)
-# Target cmd.exe (not the .bat directly) so Windows 11 allows pinning to taskbar
-$Shortcut.TargetPath       = "$env:SystemRoot\System32\cmd.exe"
-$Shortcut.Arguments        = "/c `"$BatFile`""
+$Shell    = New-Object -ComObject WScript.Shell
+$Shortcut = $Shell.CreateShortcut($LnkFile)
+# wscript.exe runs run.vbs silently (no terminal window); vbs calls run.bat
+$Shortcut.TargetPath       = "$env:SystemRoot\System32\wscript.exe"
+$Shortcut.Arguments        = "`"$VbsFile`""
 $Shortcut.WorkingDirectory = $AppDir
 $Shortcut.Description      = 'Job Hunter - AI-powered job search assistant'
 $Shortcut.IconLocation     = "$IcoFile,0"
-$Shortcut.WindowStyle      = 7   # minimised — terminal won't steal focus
+$Shortcut.WindowStyle      = 1
 $Shortcut.Save()
 
 Write-Host ""

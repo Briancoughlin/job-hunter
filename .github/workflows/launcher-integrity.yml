@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - 'run.bat'
+      - 'run.vbs'
       - 'create_shortcut.ps1'
   pull_request:
     paths:
       - 'run.bat'
+      - 'run.vbs'
       - 'create_shortcut.ps1'
 
 jobs:
@@ -19,7 +21,7 @@ jobs:
           fetch-depth: 2
 
       - name: Show diff of changed launcher files
-        run: git diff HEAD~1 HEAD -- run.bat create_shortcut.ps1
+        run: git diff HEAD~1 HEAD -- run.bat run.vbs create_shortcut.ps1
 
       - name: Warn on PR
         if: github.event_name == 'pull_request'
