@@ -1,0 +1,32 @@
+name: Launcher integrity check
+
+on:
+  push:
+    paths:
+      - 'run.bat'
+  pull_request:
+    paths:
+      - 'run.bat'
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Show diff of run.bat
+        run: git diff HEAD~1 HEAD -- run.bat
+
+      - name: Require review label on PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "::warning file=run.bat::run.bat has been modified. Manual review required before merging."
+          echo "Diff above — verify no malicious commands have been added."
+
+      - name: Flag direct push to main
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: |
+          echo "::error file=run.bat::run.bat was pushed directly to ${{ github.ref_name }}. Review this change immediately."
+          exit 1

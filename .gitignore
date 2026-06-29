@@ -24,3 +24,8 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Icons generated locally — not committed
+static/icon-192.png
+static/icon-512.png
+create_icons.py

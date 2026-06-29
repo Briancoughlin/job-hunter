@@ -44,14 +44,16 @@ cp .env.example .env
 ### Run
 
 ```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
 Opens at http://localhost:8501
 
-### Install as a desktop app (PWA)
+### Run as a desktop app (Windows)
 
-Once running, open http://localhost:8501 in Chrome or Edge and click the **install icon** (⊕) in the address bar → **Install Job Hunter**. It opens in its own window without a browser bar, just like a native app.
+Double-click `run.bat` — it launches Streamlit and opens Edge in app mode (no browser chrome, own window). Right-click the taskbar icon while running → **Pin to taskbar** for one-click access.
+
+> **Security note:** `run.bat` is tracked in this repo and monitored by CI. Any modification triggers an automated alert. Do not edit it without reviewing the diff.
 
 ---
 
