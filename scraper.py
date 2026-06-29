@@ -49,42 +49,32 @@ def _remotive(term: str, results_wanted: int) -> list[dict]:
         return []
 
 
-def _weworkremotely(term: str) -> list[dict]:
-    """We Work Remotely RSS — free, no auth."""
-    import xml.etree.ElementTree as ET
-    import urllib.parse
-
-    url = f"https://weworkremotely.com/remote-jobs/search.rss?term={urllib.parse.quote(term)}"
+def _jobicy(term: str, results_wanted: int) -> list[dict]:
+    """Jobicy public API — free, no auth, remote jobs only."""
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=10)
+        resp = requests.get(
+            "https://jobicy.com/api/v2/remote-jobs",
+            params={"count": min(results_wanted, 50), "tag": term},
+            headers=HEADERS,
+            timeout=10,
+        )
         resp.raise_for_status()
-        root = ET.fromstring(resp.content)
-        jobs = []
-        for item in root.findall(".//item"):
-            def tag(name):
-                el = item.find(name)
-                return el.text.strip() if el is not None and el.text else ""
-
-            title_raw = tag("title")
-            # WWR title format: "Company: Job Title"
-            if ": " in title_raw:
-                company, title = title_raw.split(": ", 1)
-            else:
-                company, title = "", title_raw
-
-            jobs.append({
-                "site": "weworkremotely",
-                "title": title,
-                "company": company,
-                "location": "Remote",
-                "job_url": tag("link"),
-                "date_posted": tag("pubDate")[:10],
-                "description": tag("description")[:3000],
-                "job_type": "",
+        jobs = resp.json().get("jobs", [])
+        results = []
+        for j in jobs:
+            results.append({
+                "site": "jobicy",
+                "title": j.get("jobTitle", ""),
+                "company": j.get("companyName", ""),
+                "location": j.get("jobGeo", "Remote"),
+                "job_url": j.get("url", ""),
+                "date_posted": (j.get("pubDate") or "")[:10],
+                "description": j.get("jobDescription", "")[:3000],
+                "job_type": j.get("jobType", ""),
             })
-        return jobs
+        return results
     except Exception as e:
-        print(f"  [weworkremotely] failed for '{term}': {e}")
+        print(f"  [jobicy] failed for '{term}': {e}")
         return []
 
 
@@ -118,36 +108,34 @@ def fetch_jobs(
     location: str = "Remote",
     results_per_term: int = 25,
     remote_only: bool = True,
-) -> pd.DataFrame:
+) -> tuple[pd.DataFrame, dict]:
     all_jobs = []
+    source_counts: dict[str, int] = {"remotive": 0, "jobicy": 0, "linkedin": 0}
 
     for term in search_terms:
         print(f"Searching: {term}")
 
         jobs = _remotive(term, results_per_term)
-        if jobs:
-            print(f"  [remotive] {len(jobs)} roles")
-            all_jobs.extend(jobs)
+        source_counts["remotive"] += len(jobs)
+        all_jobs.extend(jobs)
         time.sleep(0.5)
 
-        jobs = _weworkremotely(term)
-        if jobs:
-            print(f"  [weworkremotely] {len(jobs)} roles")
-            all_jobs.extend(jobs)
+        jobs = _jobicy(term, results_per_term)
+        source_counts["jobicy"] += len(jobs)
+        all_jobs.extend(jobs)
         time.sleep(0.5)
 
         jobs = _jobspy_linkedin(term, location, results_per_term, remote_only)
-        if jobs:
-            print(f"  [linkedin] {len(jobs)} roles")
-            all_jobs.extend(jobs)
+        source_counts["linkedin"] += len(jobs)
+        all_jobs.extend(jobs)
         time.sleep(1)
 
     if not all_jobs:
-        return pd.DataFrame()
+        return pd.DataFrame(), source_counts
 
     df = pd.DataFrame(all_jobs)
     df = df.drop_duplicates(subset=["title", "company"], keep="first")
-    return df.reset_index(drop=True)
+    return df.reset_index(drop=True), source_counts
 
 
 def build_search_terms(profile: dict) -> list[str]:

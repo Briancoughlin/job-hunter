@@ -182,9 +182,9 @@ if st.session_state.profile:
             print(f"[app] using base_url={base_url!r} key={api_key[:10]}...", flush=True)
             client = anthropic.Anthropic(api_key=api_key, base_url=base_url or None)
 
-            with st.spinner("Scraping LinkedIn & Indeed..."):
+            with st.spinner("Scraping job boards..."):
                 try:
-                    jobs_df = fetch_jobs(
+                    jobs_df, source_counts = fetch_jobs(
                         search_terms=all_terms,
                         location=location if not remote_only else "Remote",
                         results_per_term=results_per_term,
@@ -193,9 +193,15 @@ if st.session_state.profile:
                 except Exception as e:
                     st.error(f"Scraping failed: {e}")
                     jobs_df = pd.DataFrame()
+                    source_counts = {}
+
+            if source_counts:
+                cols = st.columns(len(source_counts))
+                for col, (src, count) in zip(cols, source_counts.items()):
+                    col.metric(src.title(), count, help=f"Roles found from {src}")
 
             if jobs_df.empty:
-                st.warning("No jobs found. Try different search terms or disable remote-only.")
+                st.warning("No jobs found — all sources returned 0 results. Job boards may be rate-limiting. Try again in a few minutes or add custom search terms.")
             else:
                 st.info(f"Found {len(jobs_df)} unique roles. Scoring with Claude...")
                 progress_bar = st.progress(0)
