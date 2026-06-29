@@ -5,6 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.0.1] - 2026-06-30
+
+### Fixed
+- **Scorer ignored UI API key** — scorer was creating its own client from environment variables instead of using the client passed from the app, causing all scores to return 0 when the API key was entered in the sidebar rather than `.env`
+- **WeWorkRemotely replaced with Jobicy** — WeWorkRemotely began returning 406 errors blocking all scraping; replaced with [Jobicy](https://jobicy.com) which has a free public API
+- **Duplicate element keys** — jobs appearing in multiple tabs (e.g. All matches + Recommended) caused a Streamlit crash due to duplicate button keys; keys now include the tab name
+- **Scoring errors now visible in UI** — when all roles score 0, the error message is surfaced in the app rather than silently failing with a hidden terminal error
+
+### Changed
+- Per-source result counts (Remotive / Jobicy / LinkedIn) now shown in the UI after each search so broken sources are immediately visible
+- Dependency minimums bumped: `streamlit>=1.58.0`, `pdfplumber>=0.11.10`, `pandas>=3.0.4`, `python-dotenv>=1.2.2`
+
+---
+
 ## [1.0.0] - 2026-06-29
 
 ### Added
