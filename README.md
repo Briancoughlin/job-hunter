@@ -38,6 +38,12 @@ cp .env.example .env
 # Edit .env and add your ANTHROPIC_API_KEY
 ```
 
+### Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
 ### Run
 
 ```bash
