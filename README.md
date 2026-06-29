@@ -51,9 +51,19 @@ Opens at http://localhost:8501
 
 ### Run as a desktop app (Windows)
 
-Double-click `run.bat` — it launches Streamlit and opens Edge in app mode (no browser chrome, own window). Right-click the taskbar icon while running → **Pin to taskbar** for one-click access.
+1. Generate the icon (once, after cloning):
+   ```
+   python create_icons.py
+   ```
+2. Create the shortcut (once):
+   ```powershell
+   .\create_shortcut.ps1
+   ```
+3. Right-click **Job Hunter.lnk** → **Pin to Start** or drag it to the taskbar.
 
-> **Security note:** `run.bat` is tracked in this repo and monitored by CI. Any modification triggers an automated alert. Do not edit it without reviewing the diff.
+Double-clicking the shortcut launches Streamlit and opens Edge in app mode — no browser chrome, its own window and taskbar entry.
+
+> **Security note:** `run.bat` and `create_shortcut.ps1` are tracked in this repo and monitored by CI — any modification triggers an automated review alert and blocks direct pushes to `master`.
 
 ---
 

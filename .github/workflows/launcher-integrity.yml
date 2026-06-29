@@ -4,9 +4,11 @@ on:
   push:
     paths:
       - 'run.bat'
+      - 'create_shortcut.ps1'
   pull_request:
     paths:
       - 'run.bat'
+      - 'create_shortcut.ps1'
 
 jobs:
   alert:
@@ -16,17 +18,16 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Show diff of run.bat
-        run: git diff HEAD~1 HEAD -- run.bat
+      - name: Show diff of changed launcher files
+        run: git diff HEAD~1 HEAD -- run.bat create_shortcut.ps1
 
-      - name: Require review label on PR
+      - name: Warn on PR
         if: github.event_name == 'pull_request'
         run: |
-          echo "::warning file=run.bat::run.bat has been modified. Manual review required before merging."
-          echo "Diff above — verify no malicious commands have been added."
+          echo "::warning::A launcher file (run.bat or create_shortcut.ps1) was modified. Review the diff above carefully before merging."
 
-      - name: Flag direct push to main
+      - name: Block direct push to default branch
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         run: |
-          echo "::error file=run.bat::run.bat was pushed directly to ${{ github.ref_name }}. Review this change immediately."
+          echo "::error::run.bat or create_shortcut.ps1 was pushed directly to ${{ github.ref_name }}. Review this change immediately."
           exit 1
