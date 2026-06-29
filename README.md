@@ -4,6 +4,8 @@ An AI-powered job search assistant built with Python and Streamlit. Upload your 
 
 Built in a few evenings using AI-assisted development.
 
+![Job Hunter screenshot](docs/screenshot.png)
+
 ---
 
 ## What it does
