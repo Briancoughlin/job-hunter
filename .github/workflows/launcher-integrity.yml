@@ -1,0 +1,35 @@
+name: Launcher integrity check
+
+on:
+  push:
+    paths:
+      - 'run.bat'
+      - 'run.vbs'
+      - 'create_shortcut.ps1'
+  pull_request:
+    paths:
+      - 'run.bat'
+      - 'run.vbs'
+      - 'create_shortcut.ps1'
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Show diff of changed launcher files
+        run: git diff HEAD~1 HEAD -- run.bat run.vbs create_shortcut.ps1
+
+      - name: Warn on PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "::warning::A launcher file (run.bat or create_shortcut.ps1) was modified. Review the diff above carefully before merging."
+
+      - name: Block direct push to default branch
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: |
+          echo "::error::run.bat or create_shortcut.ps1 was pushed directly to ${{ github.ref_name }}. Review this change immediately."
+          exit 1

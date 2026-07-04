@@ -1,0 +1,21 @@
+{
+  "name": "Job Hunter",
+  "short_name": "Job Hunter",
+  "description": "AI-powered job search assistant — score and rank roles against your CV",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e1117",
+  "theme_color": "#ff4b4b",
+  "icons": [
+    {
+      "src": "/app/static/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/app/static/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
