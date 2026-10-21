@@ -1,6 +1,7 @@
 import time
-import requests
+
 import pandas as pd
+import requests
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
@@ -139,7 +140,6 @@ def fetch_jobs(
 
 
 def build_search_terms(profile: dict) -> list[str]:
-    seniority = profile.get("seniority", "senior").title()
     domains = profile.get("domains") or []
     industries = profile.get("industries") or []
 

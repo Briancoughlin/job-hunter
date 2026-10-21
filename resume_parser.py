@@ -1,6 +1,7 @@
 import json
-import pdfplumber
+
 import anthropic
+import pdfplumber
 
 
 def extract_text_from_pdf(pdf_path: str) -> str:
