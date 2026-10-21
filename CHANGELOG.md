@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **Search terms were hardcoded to product management** — every CV was searched as Senior/Principal/Group Product Manager; terms now come from the CV's current title, seniority and recent past titles, so a developer CV searches developer roles
+- **Location setting was ignored for remote roles** — remote results were filtered against a fixed UK list whatever was entered; filtering now follows the location you type (e.g. `Dublin, Ireland`), and leaving it blank turns filtering off
+- Jobicy results are now location-filtered too (previously unfiltered)
+
+### Changed
+- Upload step accepts any CV as a PDF, not only a LinkedIn export
+- Unit tests for search-term and location logic, run in CI
+
+---
+
 ## [1.0.1] - 2026-06-30
 
 ### Fixed

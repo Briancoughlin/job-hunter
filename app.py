@@ -48,7 +48,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("🎯 Job Hunter")
-st.caption("Upload your LinkedIn profile, find roles most likely to get you an interview.")
+st.caption("Upload your CV, find roles most likely to get you an interview.")
 
 # --- Sidebar: config ---
 with st.sidebar:
@@ -77,7 +77,12 @@ with st.sidebar:
     st.subheader("Search settings")
 
     remote_only = st.checkbox("Remote roles only", value=True)
-    location = st.text_input("Location (for non-remote)", value="United Kingdom")
+    location = st.text_input(
+        "Your location",
+        value="United Kingdom",
+        help="City and/or country, e.g. 'Dublin, Ireland'. Used to search on-site roles and to "
+        "hide remote roles restricted to other countries. Leave blank to skip location filtering.",
+    )
     results_per_term = st.slider("Results per search term", 10, 50, 25)
     min_score = st.slider("Minimum match score to show", 0, 100, 50)
 
@@ -85,7 +90,7 @@ with st.sidebar:
     st.subheader("Custom search terms")
     custom_terms = st.text_area(
         "Extra job titles to search (one per line)",
-        placeholder="Senior Product Manager\nDirector of Engineering",
+        placeholder="Senior Backend Developer\nData Engineer",
     )
 
 # --- Session state ---
@@ -99,12 +104,12 @@ if "saved" not in st.session_state:
     st.session_state.saved = set()
 
 # --- Step 1: Upload resume ---
-st.header("Step 1: Upload your LinkedIn PDF")
+st.header("Step 1: Upload your CV")
 col1, col2 = st.columns([2, 1])
 
 with col1:
     uploaded_file = st.file_uploader(
-        "Export your LinkedIn profile as PDF (Me → Resources → Save to PDF)",
+        "Any CV as a PDF works, for example a LinkedIn profile export (Save to PDF on your profile)",
         type=["pdf"],
     )
 
@@ -174,7 +179,10 @@ if st.session_state.profile:
     extra_terms = [t.strip() for t in custom_terms.strip().splitlines() if t.strip()]
     all_terms = list(dict.fromkeys(auto_terms + extra_terms))
 
-    st.write(f"Will search for: {', '.join(f'`{t}`' for t in all_terms)}")
+    if all_terms:
+        st.write(f"Will search for: {', '.join(f'`{t}`' for t in all_terms)}")
+    else:
+        st.warning("No job titles found in your CV. Add the roles you want under Custom search terms in the sidebar.")
 
     if st.button("🔍 Search & Score Jobs", type="primary", use_container_width=True):
         if not api_key:
@@ -190,6 +198,7 @@ if st.session_state.profile:
                         location=location if not remote_only else "Remote",
                         results_per_term=results_per_term,
                         remote_only=remote_only,
+                        candidate_location=location,
                     )
                 except Exception as e:
                     st.error(f"Scraping failed: {e}")
@@ -230,7 +239,7 @@ if st.session_state.profile:
                     st.success(f"Done! Scored {len(results)} roles.")
                 st.rerun()
 else:
-    st.info("Upload your LinkedIn PDF above to get started.")
+    st.info("Upload your CV above to get started.")
 
 # --- Step 3: Results dashboard ---
 if st.session_state.results:
