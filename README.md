@@ -1,6 +1,6 @@
 # Job Hunter
 
-An AI-powered job search assistant built with Python and Streamlit. Upload your LinkedIn profile PDF, and it searches job boards, scores each role against your profile, and ranks them by fit — so you spend time on the right applications, not scrolling through noise.
+An AI-powered job search assistant built with Python and Streamlit. Upload your CV as a PDF, and it searches job boards, scores each role against your profile, and ranks them by fit — so you spend time on the right applications, not scrolling through noise.
 
 ![Job Hunter screenshot](docs/screenshot.png)
 
@@ -8,7 +8,7 @@ An AI-powered job search assistant built with Python and Streamlit. Upload your 
 
 ## Features
 
-- **CV Parsing** — upload a LinkedIn PDF; Claude extracts your skills, experience, seniority, and domains into a structured profile
+- **CV Parsing** — upload your CV as a PDF (a LinkedIn profile export works); Claude extracts your skills, experience, seniority, and domains into a structured profile
 - **Multi-Board Search** — queries Remotive, Jobicy, and LinkedIn for remote roles using terms derived from your profile
 - **AI Scoring** — Claude scores each job 0-100 against your profile, with skills match, seniority match, domain match, strengths, gaps, and a fit summary
 - **Interview Probability** — low / medium / high / very high rating per role
@@ -125,9 +125,9 @@ Clicking the shortcut starts Streamlit in the background and opens Edge in app m
 ## Usage
 
 1. Enter your Anthropic API key in the sidebar (or set it in `.env`)
-2. Upload your LinkedIn profile PDF — export via **Me → Resources → Save to PDF**
+2. Upload your CV as a PDF. A LinkedIn profile export works: on your profile, open **More → Save to PDF** (the menu location varies)
 3. Adjust search settings: remote only, location, results per term, minimum score
-4. Add optional custom search terms (e.g. `Senior Product Manager`)
+4. Add optional custom search terms (e.g. `Data Engineer`); terms are otherwise derived from the job titles in your CV
 5. Click **Search & Score Jobs**
 6. Browse ranked results — green (75+), amber (55-74), red (<55)
 7. Save roles, mark as applied, or export to CSV
