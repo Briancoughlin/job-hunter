@@ -1,29 +1,65 @@
 # Job Hunter
 
-An AI-powered job search assistant built with Python and Streamlit. Upload your CV, and it searches job boards, scores each role against your profile, and ranks them by fit — so you spend time on the right applications, not scrolling through noise.
-
-Built in a few evenings using AI-assisted development.
+An AI-powered job search assistant built with Python and Streamlit. Upload your CV as a PDF, and it searches job boards, scores each role against your profile, and ranks them by fit — so you spend time on the right applications, not scrolling through noise.
 
 ![Job Hunter screenshot](docs/screenshot.png)
 
 ---
 
-## What it does
+## Features
 
-1. **Parses your CV** — upload a LinkedIn PDF; Claude extracts your skills, experience, seniority, and domains into a structured profile
-2. **Searches job boards** — queries LinkedIn, Indeed, Glassdoor, and ZipRecruiter via `python-jobspy` using terms derived from your profile
-3. **Scores every role** — Claude scores each job 0–100 against your profile, with skills match, seniority match, domain match, strengths, gaps, and a fit summary
-4. **Ranks results** — sortable table of scored jobs so the best matches rise to the top; save roles, mark applied, export to CSV
+- **CV Parsing** — upload your CV as a PDF (a LinkedIn profile export works); Claude extracts your skills, experience, seniority, and domains into a structured profile
+- **Multi-Board Search** — queries Remotive, Jobicy, and LinkedIn for remote roles using terms derived from your profile
+- **AI Scoring** — Claude scores each job 0-100 against your profile, with skills match, seniority match, domain match, strengths, gaps, and a fit summary
+- **Interview Probability** — low / medium / high / very high rating per role
+- **Ranked Results** — sortable, filterable table with color-coded scores (green 75+, amber 55-74, red <55)
+- **Save & Track** — save roles, mark as applied, export results to CSV
+- **Profile Persistence** — parsed profile cached locally; no need to re-upload CV each session
+- **Configurable LLM Gateway** — Base URL field supports internal LLM proxies alongside the standard Anthropic API
+- **Custom Search Terms** — add your own job titles alongside auto-generated ones
+- **Windows Desktop Mode** — launch silently in Edge app mode with no terminal window
 
 ---
 
-## Setup
+## Project Structure
 
-### Requirements
-- Python 3.11+
-- An Anthropic API key (get one at [console.anthropic.com](https://console.anthropic.com))
+```
+job-hunter/
+├── app.py                  # Streamlit application (main entry point)
+├── resume_parser.py        # PDF text extraction and Claude-based parsing
+├── scraper.py              # Job board scraping (Remotive, Jobicy, LinkedIn)
+├── scorer.py               # Claude-based job scoring
+├── requirements.txt        # Python dependencies
+├── ruff.toml               # Ruff linter configuration
+├── .env.example            # Environment variable template
+├── run.bat                 # Windows launcher (headless)
+├── run.vbs                 # VBScript wrapper to suppress terminal
+├── create_shortcut.ps1     # PowerShell script to create desktop shortcut
+├── static/
+│   ├── manifest.json       # PWA manifest
+│   ├── sw.js               # Service worker
+│   └── icon.ico            # App icon
+├── docs/
+│   └── screenshot.png      # Application screenshot
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml          # CI: ruff lint + import check
+│   │   └── launcher-integrity.yml
+│   └── dependabot.yml      # Weekly pip dependency updates
+└── .streamlit/
+    └── config.toml         # Streamlit configuration
+```
 
-### Install
+---
+
+## Prerequisites
+
+- **Python 3.11+**
+- **Anthropic API Key** — get one at [console.anthropic.com](https://console.anthropic.com)
+
+---
+
+## Installation
 
 ```bash
 git clone https://github.com/Briancoughlin/job-hunter.git
@@ -32,33 +68,46 @@ pip install -r requirements.txt
 pip install python-jobspy --no-deps
 ```
 
-> **Note:** `python-jobspy` pins an older numpy that has no prebuilt wheels for Python 3.12+. `--no-deps` skips that constraint — it works correctly with the current numpy at runtime.
+> **Note:** `python-jobspy` pins an older numpy that has no prebuilt wheels for Python 3.12+. Using `--no-deps` skips that constraint — it works correctly at runtime.
 
-### Configure
+---
+
+## Configuration
+
+Copy the example environment file and add your API key:
 
 ```bash
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
 ```
 
-Or enter your API key directly in the sidebar when the app is running.
+Edit `.env`:
 
-### Run
+```env
+ANTHROPIC_API_KEY=sk-ant-...your-key-here...
+# Optional: set this if your organisation has an internal LLM gateway
+# ANTHROPIC_BASE_URL=https://your-llm-gateway.example.com
+```
+
+Or enter your API key directly in the sidebar when the app is running. The key is saved to `.env` for future sessions.
+
+---
+
+## Running the App
 
 ```bash
 python -m streamlit run app.py
 ```
 
-Opens at http://localhost:8501
+Opens at [http://localhost:8501](http://localhost:8501).
 
 ---
 
-## Run as a desktop app (Windows)
+## Windows Desktop Mode
 
 Launch Job Hunter silently in its own Edge window — no terminal, no browser tabs.
 
-1. Generate the icon (once, after cloning):
-   ```
+1. Generate the custom icon (once, after cloning):
+   ```bash
    python create_icons.py
    ```
 2. Create the Start/taskbar shortcut (once):
@@ -75,32 +124,29 @@ Clicking the shortcut starts Streamlit in the background and opens Edge in app m
 
 ## Usage
 
-1. Enter your Anthropic API key in the sidebar (saved to `.env` for future sessions)
-2. Upload your LinkedIn profile PDF (`Me → Resources → Save to PDF`)
-3. Adjust search settings — remote only, location, results per term, minimum score
-4. Click **Search & Score Jobs**
-5. Browse the ranked results — green 75+, amber 55–74, red below 55
-6. Save roles, mark applied, or export to CSV
+1. Enter your Anthropic API key in the sidebar (or set it in `.env`)
+2. Upload your CV as a PDF. A LinkedIn profile export works: on your profile, open **More → Save to PDF** (the menu location varies)
+3. Adjust search settings: remote only, location, results per term, minimum score
+4. Add optional custom search terms (e.g. `Data Engineer`); terms are otherwise derived from the job titles in your CV
+5. Click **Search & Score Jobs**
+6. Browse ranked results — green (75+), amber (55-74), red (<55)
+7. Save roles, mark as applied, or export to CSV
 
-Your parsed profile is cached locally as `saved_profile.json` — no need to re-upload your CV each session.
+Your parsed profile is cached as `saved_profile.json` — no need to re-upload your CV each session.
 
 ---
 
-## Tech stack
+## Tech Stack
 
 | Component | Purpose |
 |-----------|---------|
 | Python | Backend logic |
-| Streamlit | UI |
+| Streamlit | Web UI |
 | Claude (Anthropic) | CV parsing and job scoring |
-| python-jobspy | Job board scraping (LinkedIn, Indeed, Glassdoor, ZipRecruiter) |
+| Remotive / Jobicy / LinkedIn | Job board sources |
 | pdfplumber | PDF text extraction |
-
----
-
-## Privacy
-
-Everything runs locally. Your CV and profile never leave your machine beyond the API calls to Claude for parsing and scoring. No accounts, no cloud sync, no telemetry.
+| pandas | Data manipulation |
+| ruff | Linting |
 
 ---
 
