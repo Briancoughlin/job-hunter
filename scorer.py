@@ -1,7 +1,9 @@
 import json
-import os
+import traceback
+
 import anthropic
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -60,7 +62,7 @@ def score_job(job: dict, profile: dict, client: anthropic.Anthropic) -> dict:
         return json.loads(content.strip())
     except Exception as e:
         print(f"[scorer] ERROR: {e}", flush=True)
-        import traceback; traceback.print_exc()
+        traceback.print_exc()
         return {
             "overall_score": 0,
             "interview_probability": "unknown",

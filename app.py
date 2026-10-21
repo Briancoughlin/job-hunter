@@ -1,14 +1,15 @@
-import os
 import json
+import os
 import tempfile
+
 import anthropic
-import streamlit as st
 import pandas as pd
+import streamlit as st
 from dotenv import load_dotenv, set_key
 
 from resume_parser import parse_resume
-from scraper import fetch_jobs, build_search_terms
 from scorer import score_all_jobs
+from scraper import build_search_terms, fetch_jobs
 
 load_dotenv()
 
