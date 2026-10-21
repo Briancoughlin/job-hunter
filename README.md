@@ -9,10 +9,11 @@ An AI-powered job search assistant built with Python and Streamlit. Upload your 
 ## Features
 
 - **CV Parsing** — upload your CV as a PDF (a LinkedIn profile export works); the model extracts your skills, experience, seniority, and domains into a structured profile
-- **Multi-Board Search** — queries Remotive, Jobicy, and LinkedIn for remote roles using terms derived from your profile
+- **Multi-Board Search** — queries Remotive, Jobicy, and LinkedIn using job titles derived from your CV (your current title, the next step up, and recent past roles), so it works for any profession
+- **Location-Aware** — enter a city or country (e.g. `Dublin, Ireland`) and remote roles restricted to other countries are filtered out; leave it blank to see everything
 - **AI Scoring** — the model scores each job 0-100 against your profile, with skills match, seniority match, domain match, strengths, gaps, and a fit summary
 - **Interview Probability** — low / medium / high / very high rating per role
-- **Ranked Results** — sortable, filterable table with color-coded scores (green 75+, amber 55-74, red <55)
+- **Ranked Results** — roles ranked by score with colour-coded scores (green 75+, amber 55-74, red <55), a minimum-score filter, and tabs for All matches, Recommended, Saved and Applied
 - **Save & Track** — save roles, mark as applied, export results to CSV
 - **Profile Persistence** — parsed profile cached locally; no need to re-upload CV each session
 - **Choice of model** — Claude by default, or a free local model via [Ollama](https://ollama.com)
@@ -31,6 +32,8 @@ job-hunter/
 ├── resume_parser.py        # PDF text extraction and LLM-based parsing
 ├── scraper.py              # Job board scraping (Remotive, Jobicy, LinkedIn)
 ├── scorer.py               # LLM-based job scoring
+├── tests/
+│   └── test_scraper.py     # Unit tests for search terms and location filtering
 ├── requirements.txt        # Python dependencies
 ├── ruff.toml               # Ruff linter configuration
 ├── .env.example            # Environment variable template
@@ -45,7 +48,7 @@ job-hunter/
 │   └── screenshot.png      # Application screenshot
 ├── .github/
 │   ├── workflows/
-│   │   ├── ci.yml          # CI: ruff lint + import check
+│   │   ├── ci.yml          # CI: ruff lint, import check, unit tests
 │   │   └── launcher-integrity.yml
 │   └── dependabot.yml      # Weekly pip dependency updates
 └── .streamlit/
@@ -136,25 +139,28 @@ python -m streamlit run app.py
 
 Opens at [http://localhost:8501](http://localhost:8501).
 
+To run the tests:
+
+```bash
+pip install pytest
+python -m pytest tests
+```
+
 ---
 
 ## Windows Desktop Mode
 
 Launch Job Hunter silently in its own Edge window — no terminal, no browser tabs.
 
-1. Generate the custom icon (once, after cloning):
-   ```bash
-   python create_icons.py
-   ```
-2. Create the Start/taskbar shortcut (once):
+1. Create the Start/taskbar shortcut (once, after cloning):
    ```powershell
    .\create_shortcut.ps1
    ```
-3. Right-click **Job Hunter.lnk** → **Pin to Start** or **Show more options** → **Pin to taskbar**
+2. Right-click **Job Hunter.lnk** → **Pin to Start** or **Show more options** → **Pin to taskbar**
 
 Clicking the shortcut starts Streamlit in the background and opens Edge in app mode.
 
-> **Security:** `run.bat`, `run.vbs`, and `create_shortcut.ps1` are version-controlled and monitored by CI. Any modification triggers a review alert; direct pushes to `master` are blocked.
+> **Security:** `run.bat`, `run.vbs`, and `create_shortcut.ps1` are version-controlled, and a CI check flags any change to them for review.
 
 ---
 
@@ -201,4 +207,4 @@ See [SECURITY.md](SECURITY.md).
 
 ## Licence
 
-MIT
+MIT. See [LICENSE](LICENSE).
