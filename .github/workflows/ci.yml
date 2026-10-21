@@ -22,7 +22,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install ruff
+          pip install ruff pytest
 
       - name: Lint with ruff
         run: ruff check .
@@ -31,3 +31,6 @@ jobs:
         run: python -c "import app; import scraper; import scorer; import resume_parser"
         env:
           ANTHROPIC_API_KEY: sk-ant-placeholder
+
+      - name: Run tests
+        run: python -m pytest -q tests
