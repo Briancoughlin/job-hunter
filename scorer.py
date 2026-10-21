@@ -1,12 +1,6 @@
 import json
 import traceback
 
-import anthropic
-from dotenv import load_dotenv
-
-load_dotenv()
-
-
 SCORE_PROMPT = """You are an expert recruiter. Score how well this candidate profile matches this job posting.
 The candidate is based in the UK. Roles that are US-only or exclude UK candidates should be scored lower on location fit.
 
@@ -36,7 +30,7 @@ Score the match and return ONLY valid JSON:
 Be honest and calibrated. A score above 75 means genuinely strong match likely to get an interview callback."""
 
 
-def score_job(job: dict, profile: dict, client: anthropic.Anthropic) -> dict:
+def score_job(job: dict, profile: dict, client) -> dict:
     description = (job.get("description") or "")[:3000]  # truncate to save tokens
 
     prompt = SCORE_PROMPT.format(
@@ -48,18 +42,7 @@ def score_job(job: dict, profile: dict, client: anthropic.Anthropic) -> dict:
     )
 
     try:
-        response = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=512,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        content = response.content[0].text.strip()
-        print(f"[scorer] raw response: {content[:200]}", flush=True)
-        if content.startswith("```"):
-            content = content.split("```")[1]
-            if content.startswith("json"):
-                content = content[4:]
-        return json.loads(content.strip())
+        return client.complete_json(prompt, max_tokens=512)
     except Exception as e:
         print(f"[scorer] ERROR: {e}", flush=True)
         traceback.print_exc()
@@ -76,7 +59,7 @@ def score_job(job: dict, profile: dict, client: anthropic.Anthropic) -> dict:
         }
 
 
-def score_all_jobs(jobs_df, profile: dict, client: anthropic.Anthropic, progress_callback=None):
+def score_all_jobs(jobs_df, profile: dict, client, progress_callback=None):
     results = []
     total = len(jobs_df)
 

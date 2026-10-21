@@ -2,11 +2,11 @@ import json
 import os
 import tempfile
 
-import anthropic
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv, set_key
 
+from llm import OLLAMA_DEFAULT_BASE_URL, OLLAMA_DEFAULT_MODEL, PROVIDERS, make_client
 from resume_parser import parse_resume
 from scorer import score_all_jobs
 from scraper import build_search_terms, fetch_jobs
@@ -35,6 +35,23 @@ def save_env_key(key: str, value: str):
     set_key(ENV_PATH, key, value)
 
 
+def persist_setting(key: str, value: str, default: str = ""):
+    """Save a sidebar value to .env (and the current process) when it changes."""
+    if value and value != os.getenv(key, default):
+        save_env_key(key, value)
+        os.environ[key] = value
+
+
+def build_client():
+    return make_client(
+        provider,
+        api_key=api_key,
+        base_url=base_url,
+        ollama_model=ollama_model,
+        ollama_base_url=ollama_base_url,
+    )
+
+
 st.set_page_config(page_title="Job Hunter", page_icon="🎯", layout="wide")
 
 st.markdown("""
@@ -54,24 +71,49 @@ st.caption("Upload your CV, find roles most likely to get you an interview.")
 with st.sidebar:
     st.header("Configuration")
 
-    api_key = st.text_input(
-        "API Key",
-        value=os.getenv("ANTHROPIC_API_KEY", ""),
-        type="password",
-        help="Your Anthropic API key (or internal LLM gateway key)",
+    saved_provider = os.getenv("LLM_PROVIDER", "Claude")
+    provider = st.radio(
+        "Model provider",
+        PROVIDERS,
+        index=PROVIDERS.index(saved_provider) if saved_provider in PROVIDERS else 0,
+        horizontal=True,
+        help="Claude gives the most accurate scores (paid API). Ollama runs a free model on your own machine.",
     )
-    if api_key and api_key != os.getenv("ANTHROPIC_API_KEY", ""):
-        save_env_key("ANTHROPIC_API_KEY", api_key)
-        os.environ["ANTHROPIC_API_KEY"] = api_key
+    persist_setting("LLM_PROVIDER", provider, default="Claude")
 
-    base_url = st.text_input(
-        "API Base URL (optional)",
-        value=os.getenv("ANTHROPIC_BASE_URL", ""),
-        help="Leave blank for standard Anthropic. Set this if your organisation has an internal LLM gateway.",
-    )
-    if base_url and base_url != os.getenv("ANTHROPIC_BASE_URL", ""):
-        save_env_key("ANTHROPIC_BASE_URL", base_url)
-        os.environ["ANTHROPIC_BASE_URL"] = base_url
+    api_key = base_url = ollama_model = ollama_base_url = ""
+    if provider == "Claude":
+        api_key = st.text_input(
+            "API Key",
+            value=os.getenv("ANTHROPIC_API_KEY", ""),
+            type="password",
+            help="Your Anthropic API key (or internal LLM gateway key)",
+        )
+        persist_setting("ANTHROPIC_API_KEY", api_key)
+
+        base_url = st.text_input(
+            "API Base URL (optional)",
+            value=os.getenv("ANTHROPIC_BASE_URL", ""),
+            help="Leave blank for standard Anthropic. Set this if your organisation has an internal LLM gateway.",
+        )
+        persist_setting("ANTHROPIC_BASE_URL", base_url)
+    else:
+        ollama_model = st.text_input(
+            "Ollama model",
+            value=os.getenv("OLLAMA_MODEL", OLLAMA_DEFAULT_MODEL),
+            help="Any model you have pulled, e.g. `ollama pull llama3.1:8b`. Larger models score more accurately.",
+        )
+        persist_setting("OLLAMA_MODEL", ollama_model, default=OLLAMA_DEFAULT_MODEL)
+
+        ollama_base_url = st.text_input(
+            "Ollama URL",
+            value=os.getenv("OLLAMA_BASE_URL", OLLAMA_DEFAULT_BASE_URL),
+            help="Where Ollama is running. The default works for a standard local install.",
+        )
+        persist_setting("OLLAMA_BASE_URL", ollama_base_url, default=OLLAMA_DEFAULT_BASE_URL)
+        st.caption("Local models are free but score less accurately than Claude, and are slower without a GPU.")
+
+    provider_ready = provider == "Ollama" or bool(api_key)
 
     st.divider()
     st.subheader("Search settings")
@@ -130,12 +172,12 @@ with col2:
             st.rerun()
 
 if uploaded_file and not st.session_state.profile:
-    if not api_key:
+    if not provider_ready:
         st.error("Add your API key in the sidebar first.")
     else:
-        with st.spinner("Parsing your resume with Claude..."):
+        with st.spinner(f"Parsing your resume with {provider}..."):
             try:
-                client = anthropic.Anthropic(api_key=api_key, base_url=base_url or None)
+                client = build_client()
                 with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
                     tmp.write(uploaded_file.read())
                     tmp_path = tmp.name
@@ -185,11 +227,14 @@ if st.session_state.profile:
         st.warning("No job titles found in your CV. Add the roles you want under Custom search terms in the sidebar.")
 
     if st.button("🔍 Search & Score Jobs", type="primary", use_container_width=True):
-        if not api_key:
+        if not provider_ready:
             st.error("Add your API key in the sidebar first.")
         else:
-            print(f"[app] using base_url={base_url!r} key={api_key[:10]}...", flush=True)
-            client = anthropic.Anthropic(api_key=api_key, base_url=base_url or None)
+            if provider == "Claude":
+                print(f"[app] using Claude base_url={base_url!r} key={api_key[:10]}...", flush=True)
+            else:
+                print(f"[app] using Ollama model={ollama_model!r} url={ollama_base_url!r}", flush=True)
+            client = build_client()
 
             with st.spinner("Scraping job boards..."):
                 try:
@@ -213,7 +258,7 @@ if st.session_state.profile:
             if jobs_df.empty:
                 st.warning("No jobs found — all sources returned 0 results. Job boards may be rate-limiting. Try again in a few minutes or add custom search terms.")
             else:
-                st.info(f"Found {len(jobs_df)} unique roles. Scoring with Claude...")
+                st.info(f"Found {len(jobs_df)} unique roles. Scoring with {provider}...")
                 progress_bar = st.progress(0)
                 status_text = st.empty()
 
@@ -234,7 +279,7 @@ if st.session_state.profile:
                     if error_msg:
                         st.error(f"Scoring failed for all roles — {error_msg}")
                     else:
-                        st.warning("All roles scored 0. Check your API key and Base URL in the sidebar.")
+                        st.warning("All roles scored 0. Check your provider settings in the sidebar.")
                 else:
                     st.success(f"Done! Scored {len(results)} roles.")
                 st.rerun()

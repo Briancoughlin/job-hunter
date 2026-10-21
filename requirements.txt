@@ -3,3 +3,4 @@ streamlit>=1.66.0
 pdfplumber>=0.11.10
 pandas>=3.0.6
 python-dotenv>=1.2.4
+requests>=2.32.0

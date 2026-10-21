@@ -7,6 +7,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Optional free local model via Ollama** — a sidebar toggle switches CV parsing and job scoring between Claude (default, unchanged) and any locally pulled Ollama model. Ollama model and URL are saved to `.env` alongside the existing settings
+- `llm.py` — a small provider layer so the parser and scorer share one code path for both backends
+- Clear error messages when Ollama isn't running or the chosen model hasn't been pulled
+
 ### Fixed
 - **Search terms were hardcoded to product management** — every CV was searched as Senior/Principal/Group Product Manager; terms now come from the CV's current title, seniority and recent past titles, so a developer CV searches developer roles
 - **Location setting was ignored for remote roles** — remote results were filtered against a fixed UK list whatever was entered; filtering now follows the location you type (e.g. `Dublin, Ireland`), and leaving it blank turns filtering off
@@ -15,6 +20,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - Upload step accepts any CV as a PDF, not only a LinkedIn export
 - Unit tests for search-term and location logic, run in CI
+- `requests` is now listed explicitly in `requirements.txt` (it was already used by the scraper)
 
 ---
 
