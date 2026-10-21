@@ -1,6 +1,3 @@
-import json
-
-import anthropic
 import pdfplumber
 
 
@@ -14,16 +11,11 @@ def extract_text_from_pdf(pdf_path: str) -> str:
     return text.strip()
 
 
-def parse_resume(pdf_path: str, client: anthropic.Anthropic) -> dict:
+def parse_resume(pdf_path: str, client) -> dict:
+    """Parse a CV PDF into a profile dict. ``client`` is any llm.py client."""
     raw_text = extract_text_from_pdf(pdf_path)
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=2048,
-        messages=[
-            {
-                "role": "user",
-                "content": f"""Extract structured profile data from this LinkedIn/resume PDF text.
+    prompt = f"""Extract structured profile data from this LinkedIn/resume PDF text.
 Return ONLY valid JSON with this exact structure:
 
 {{
@@ -41,15 +33,6 @@ Return ONLY valid JSON with this exact structure:
 }}
 
 Resume text:
-{raw_text}""",
-            }
-        ],
-    )
+{raw_text}"""
 
-    content = response.content[0].text.strip()
-    # Strip markdown code fences if present
-    if content.startswith("```"):
-        content = content.split("```")[1]
-        if content.startswith("json"):
-            content = content[4:]
-    return json.loads(content.strip())
+    return client.complete_json(prompt, max_tokens=2048)
