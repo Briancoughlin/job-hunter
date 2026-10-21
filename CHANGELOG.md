@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased]
+## [1.1.0] - 2026-10-21
 
 ### Added
 - **Optional free local model via Ollama** — a sidebar toggle switches CV parsing and job scoring between Claude (default, unchanged) and any locally pulled Ollama model. Ollama model and URL are saved to `.env` alongside the existing settings
@@ -21,6 +21,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Upload step accepts any CV as a PDF, not only a LinkedIn export
 - Unit tests for search-term and location logic, run in CI
 - `requests` is now listed explicitly in `requirements.txt` (it was already used by the scraper)
+- Dependency minimums bumped: `anthropic>=1.15.0`, `streamlit>=1.66.0`, `pandas>=3.0.6`, `python-dotenv>=1.2.4`
+- Code tidied to pass the ruff lint check (import order, unused imports and variables); no behaviour change
+- README refreshed: new screenshot, both model providers, accurate job sources; added the MIT `LICENSE` file the README already referred to
 
 ---
 
