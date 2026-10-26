@@ -1,4 +1,4 @@
-anthropic>=1.15.0
+anthropic>=2.3.0
 streamlit>=1.66.0
 pdfplumber>=0.11.10
 pandas>=3.0.6
